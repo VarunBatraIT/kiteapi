@@ -1,4 +1,4 @@
-package kiteconnect
+package kiteapi
 
 import (
 	"fmt"
@@ -14,53 +14,50 @@ type quoteParams struct {
 	Instruments []string `url:"i"`
 }
 
+type OHLC struct {
+	Open  float64 `json:"open"`
+	High  float64 `json:"high"`
+	Low   float64 `json:"low"`
+	Close float64 `json:"close"`
+}
+
+type DepthItem struct {
+	Price    float64 `json:"price"`
+	Quantity int     `json:"quantity"`
+	Orders   int     `json:"orders"`
+}
+
+type Depth struct {
+	Buy  []DepthItem `json:"buy"`
+	Sell []DepthItem `json:"sell"`
+}
+
 // Quote represents the full quote response.
 type Quote map[string]struct {
-	InstrumentToken int     `json:"instrument_token"`
-	Timestamp       Time    `json:"timestamp"`
-	LastPrice       float64 `json:"last_price"`
-	LastQuantity    int     `json:"last_quantity"`
-	LastTradeTime   Time    `json:"last_trade_time"`
-	AveragePrice    float64 `json:"average_price"`
-	Volume          int     `json:"volume"`
-	BuyQuantity     int     `json:"buy_quantity"`
-	SellQuantity    int     `json:"sell_quantity"`
-	OHLC            struct {
-		Open  float64 `json:"open"`
-		High  float64 `json:"high"`
-		Low   float64 `json:"low"`
-		Close float64 `json:"close"`
-	} `json:"ohlc"`
+	InstrumentToken   int     `json:"instrument_token"`
+	Timestamp         Time    `json:"timestamp"`
+	LastPrice         float64 `json:"last_price"`
+	LastQuantity      int     `json:"last_quantity"`
+	LastTradeTime     Time    `json:"last_trade_time"`
+	AveragePrice      float64 `json:"average_price"`
+	Volume            int     `json:"volume"`
+	BuyQuantity       int     `json:"buy_quantity"`
+	SellQuantity      int     `json:"sell_quantity"`
+	OHLC              OHLC    `json:"ohlc"`
 	NetChange         float64 `json:"net_change"`
 	OI                float64 `json:"oi"`
 	OIDayHigh         float64 `json:"oi_day_high"`
 	OIDayLow          float64 `json:"oi_day_low"`
 	LowerCircuitLimit float64 `json:"lower_circuit_limit"`
 	UpperCircuitLimit float64 `json:"upper_circuit_limit"`
-	Depth             struct {
-		Buy []struct {
-			Price    float64 `json:"price"`
-			Quantity int     `json:"quantity"`
-			Orders   int     `json:"orders"`
-		} `json:"buy"`
-		Sell []struct {
-			Price    float64 `json:"price"`
-			Quantity int     `json:"quantity"`
-			Orders   int     `json:"orders"`
-		} `json:"sell"`
-	} `json:"depth"`
+	Depth             Depth   `json:"depth"`
 }
 
 // QuoteOHLC represents OHLC quote response.
 type QuoteOHLC map[string]struct {
 	InstrumentToken int     `json:"instrument_token"`
 	LastPrice       float64 `json:"last_price"`
-	OHLC            struct {
-		Open  float64 `json:"open"`
-		High  float64 `json:"high"`
-		Low   float64 `json:"low"`
-		Close float64 `json:"close"`
-	} `json:"ohlc"`
+	OHLC            OHLC    `json:"ohlc"`
 }
 
 // QuoteLTP represents last price quote response.
@@ -77,6 +74,7 @@ type HistoricalData struct {
 	Low    float64 `json:"Low"`
 	Close  float64 `json:"close"`
 	Volume int     `json:"volume"`
+	OI     int     `json:"oi"`
 }
 
 type historicalDataReceived struct {
@@ -87,6 +85,7 @@ type historicalDataParams struct {
 	FromDate        string `url:"from"`
 	ToDate          string `url:"to"`
 	Continuous      int    `url:"continuous"`
+	OI              int    `url:"oi"`
 	InstrumentToken int    `url:"instrument_token"`
 	Interval        string `url:"interval"`
 }
@@ -208,6 +207,7 @@ func (c *Client) formatHistoricalData(inp historicalDataReceived) ([]HistoricalD
 			low    float64
 			close  float64
 			volume int
+			oi     int
 			ok     bool
 		)
 
@@ -238,7 +238,14 @@ func (c *Client) formatHistoricalData(inp historicalDataReceived) ([]HistoricalD
 		}
 
 		volume = int(v)
+		if len(i) > 6 {
+			o, ok := i[6].(float64)
+			if !ok {
+				return data, NewError(GeneralError, fmt.Sprintf("Error decoding response `oi`: %v", i[6]), nil)
+			}
+			oi = int(o)
 
+		}
 		// Parse string to date
 		d, err := time.Parse("2006-01-02T15:04:05-0700", ds)
 		if err != nil {
@@ -252,6 +259,7 @@ func (c *Client) formatHistoricalData(inp historicalDataReceived) ([]HistoricalD
 			Low:    low,
 			Close:  close,
 			Volume: volume,
+			OI:     oi,
 		})
 	}
 
@@ -259,7 +267,7 @@ func (c *Client) formatHistoricalData(inp historicalDataReceived) ([]HistoricalD
 }
 
 // GetHistoricalData gets list of historical data.
-func (c *Client) GetHistoricalData(instrumentToken int, interval string, fromDate time.Time, toDate time.Time, continuous bool) ([]HistoricalData, error) {
+func (c *Client) GetHistoricalData(instrumentToken int, interval string, fromDate time.Time, toDate time.Time, continuous bool, oi bool) ([]HistoricalData, error) {
 	var (
 		err       error
 		data      []HistoricalData
@@ -272,9 +280,14 @@ func (c *Client) GetHistoricalData(instrumentToken int, interval string, fromDat
 	inpParams.FromDate = fromDate.Format("2006-01-02 15:04:05")
 	inpParams.ToDate = toDate.Format("2006-01-02 15:04:05")
 	inpParams.Continuous = 0
+	inpParams.OI = 0
 
 	if continuous {
 		inpParams.Continuous = 1
+	}
+
+	if oi {
+		inpParams.OI = 1
 	}
 
 	if params, err = query.Values(inpParams); err != nil {
@@ -282,10 +295,9 @@ func (c *Client) GetHistoricalData(instrumentToken int, interval string, fromDat
 	}
 
 	var resp historicalDataReceived
-	if c.doEnvelope(http.MethodGet, fmt.Sprintf(URIGetHistorical, instrumentToken, interval), params, nil, &resp); err != nil {
+	if err := c.doEnvelope(http.MethodGet, fmt.Sprintf(URIGetHistorical, instrumentToken, interval), params, nil, &resp); err != nil {
 		return data, err
 	}
-
 	return c.formatHistoricalData(resp)
 }
 

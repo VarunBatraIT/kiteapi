@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	kiteconnect "github.com/zerodhatech/gokiteconnect"
+	kiteapi "github.com/VarunBatraIT/kiteapi"
 )
 
 const (
@@ -13,7 +13,7 @@ const (
 
 func main() {
 	// Create a new Kite connect instance
-	kc := kiteconnect.New(apiKey)
+	kc := kiteapi.NewConnect(apiKey)
 
 	// Login URL from which request token can be obtained
 	fmt.Println(kc.GetLoginURL())

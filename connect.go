@@ -1,4 +1,4 @@
-package kiteconnect
+package kiteapi
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ type Client struct {
 }
 
 const (
-	name           string        = "gokiteconnect"
+	name           string        = "otamia/kiteapi"
 	version        string        = "3.0.0"
 	requestTimeout time.Duration = 7000 * time.Millisecond
 	baseURI        string        = "https://api.kite.trade"
@@ -132,7 +132,7 @@ const (
 )
 
 // New creates a new Kite Connect client.
-func New(apiKey string) *Client {
+func NewConnect(apiKey string) *Client {
 	client := &Client{
 		apiKey:  apiKey,
 		baseURI: baseURI,

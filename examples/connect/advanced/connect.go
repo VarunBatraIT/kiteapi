@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	kiteconnect "github.com/zerodhatech/gokiteconnect"
+	kiteapi "github.com/VarunBatraIT/kiteapi"
 )
 
 const (
@@ -16,7 +16,7 @@ const (
 
 func main() {
 	// Create a new Kite connect instance
-	kc := kiteconnect.New(apiKey)
+	kc := kiteapi.NewConnect(apiKey)
 
 	var (
 		requestToken string

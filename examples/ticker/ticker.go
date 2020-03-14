@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	kiteconnect "github.com/zerodhatech/gokiteconnect"
-	kiteticker "github.com/zerodhatech/gokiteconnect/ticker"
+	kiteapi "github.com/VarunBatraIT/kiteapi"
 )
 
 const (
@@ -14,7 +13,7 @@ const (
 )
 
 var (
-	ticker *kiteticker.Ticker
+	ticker *kiteapi.Ticker
 )
 
 // Triggered when any error is raised
@@ -37,7 +36,7 @@ func onConnect() {
 }
 
 // Triggered when tick is recevived
-func onTick(tick kiteticker.Tick) {
+func onTick(tick kiteapi.Tick) {
 	fmt.Println("Tick: ", tick)
 }
 
@@ -52,13 +51,13 @@ func onNoReconnect(attempt int) {
 }
 
 // Triggered when order update is received
-func onOrderUpdate(order kiteconnect.Order) {
+func onOrderUpdate(order kiteapi.Order) {
 	fmt.Printf("Order: %s", order.OrderID)
 }
 
 func main() {
 	// Create a new Kite connect instance
-	kc := kiteconnect.New(apiKey)
+	kc := kiteapi.NewConnect(apiKey)
 
 	// Login URL from which request token can be obtained
 	fmt.Println(kc.GetLoginURL())
@@ -76,7 +75,7 @@ func main() {
 	}
 
 	// Create new Kite ticker instance
-	ticker = kiteticker.New(apiKey, data.AccessToken)
+	ticker = kiteapi.NewTicker(apiKey, data.AccessToken)
 
 	// Assign callbacks
 	ticker.OnError(onError)

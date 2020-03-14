@@ -2,7 +2,7 @@
  * like errors that can be used across other kite packages.
  */
 
-package kiteconnect
+package kiteapi
 
 import "net/http"
 

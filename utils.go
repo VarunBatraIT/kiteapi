@@ -1,4 +1,4 @@
-package kiteconnect
+package kiteapi
 
 import (
 	"strings"
@@ -11,7 +11,7 @@ type Time struct {
 }
 
 // List of known time formats
-var ctLayouts = []string{"2006-01-02", "2006-01-02 15:04:05", "2006-01-02T15:04:05-0700"}
+var ctLayouts = []string{"2006-01-02", "2006-01-02 15:04:05", "2006-01-02T15:04:05-0700", "2006-01-02T15:04:05-07:00"}
 
 // UnmarshalJSON parses JSON time string with custom time formats
 func (t *Time) UnmarshalJSON(b []byte) (err error) {

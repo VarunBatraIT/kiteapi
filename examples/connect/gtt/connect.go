@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	kiteconnect "github.com/zerodhatech/gokiteconnect"
+	kiteapi "github.com/VarunBatraIT/kiteapi"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 
 func main() {
 	// Create a new Kite connect instance
-	kc := kiteconnect.New(apiKey)
+	kc := kiteapi.NewConnect(apiKey)
 
 	var (
 		requestToken string
@@ -53,13 +53,13 @@ func main() {
 
 	log.Println("Placing GTT...")
 	// Place GTT
-	gttResp, err := kc.PlaceGTT(kiteconnect.GTTParams{
+	gttResp, err := kc.PlaceGTT(kiteapi.GTTParams{
 		Tradingsymbol:   "INFY",
 		Exchange:        "NSE",
 		LastPrice:       800,
-		TransactionType: kiteconnect.TransactionTypeBuy,
-		Trigger: &kiteconnect.GTTSingleLegTrigger{
-			TriggerParams: kiteconnect.TriggerParams{
+		TransactionType: kiteapi.TransactionTypeBuy,
+		Trigger: &kiteapi.GTTSingleLegTrigger{
+			TriggerParams: kiteapi.TriggerParams{
 				TriggerValue: 1,
 				Quantity:     1,
 				LimitPrice:   1,
@@ -82,13 +82,13 @@ func main() {
 
 	log.Println("Modify existing GTT...")
 
-	gttModifyResp, err := kc.ModifyGTT(gttResp.TriggerID, kiteconnect.GTTParams{
+	gttModifyResp, err := kc.ModifyGTT(gttResp.TriggerID, kiteapi.GTTParams{
 		Tradingsymbol:   "INFY",
 		Exchange:        "NSE",
 		LastPrice:       800,
-		TransactionType: kiteconnect.TransactionTypeBuy,
-		Trigger: &kiteconnect.GTTSingleLegTrigger{
-			TriggerParams: kiteconnect.TriggerParams{
+		TransactionType: kiteapi.TransactionTypeBuy,
+		Trigger: &kiteapi.GTTSingleLegTrigger{
+			TriggerParams: kiteapi.TriggerParams{
 				TriggerValue: 2,
 				Quantity:     2,
 				LimitPrice:   2,

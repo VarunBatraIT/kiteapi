@@ -1,4 +1,4 @@
-package kiteconnect
+package kiteapi
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func TestNewClient(t *testing.T) {
 	t.Parallel()
 
 	apiKey := "api_key"
-	client := New(apiKey)
+	client := NewConnect(apiKey)
 
 	if client.apiKey != apiKey {
 		t.Errorf("Api key is not assigned properly.")
@@ -37,7 +37,7 @@ func TestClientSetters(t *testing.T) {
 	t.Parallel()
 
 	apiKey := "kitefront"
-	client := New(apiKey)
+	client := NewConnect(apiKey)
 
 	customDebug := true
 	customBaseURI := "test"
@@ -164,7 +164,7 @@ type TestSuite struct {
 
 // Setup the API suit
 func (ts *TestSuite) SetupAPITestSuit() {
-	ts.KiteConnect = New("test_api_key")
+	ts.KiteConnect = NewConnect("test_api_key")
 	httpmock.ActivateNonDefault(ts.KiteConnect.httpClient.GetClient().client)
 
 	for _, v := range MockResponders {

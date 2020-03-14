@@ -1,1 +1,1 @@
-package kiteconnect
+package kiteapi
